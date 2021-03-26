@@ -1,5 +1,5 @@
-use actix_files::NamedFile;
 use crate::error::KarpError;
+use actix_files::NamedFile;
 
 pub async fn openapi_spec_yaml() -> Result<NamedFile, KarpError> {
     use std::path;
@@ -10,18 +10,17 @@ pub async fn openapi_spec_yaml() -> Result<NamedFile, KarpError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{config};
-    use actix_web::{App, test, http, http::StatusCode};
+    use crate::config;
+    use actix_web::{http, http::StatusCode, test, App};
 
     #[actix_rt::test]
     async fn get_yaml() {
-
-        let mut app =
-            test::init_service(
-                App::new()
-                    .wrap(actix_web::middleware::Logger::default())
-                    .configure(crate::config::app::config_services)
-            ).await;
+        let mut app = test::init_service(
+            App::new()
+                .wrap(actix_web::middleware::Logger::default())
+                .configure(crate::config::app::config_services),
+        )
+        .await;
 
         let request = test::TestRequest::get()
             .uri("http://localhost/documentation/spec.yaml")

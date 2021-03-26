@@ -1,5 +1,5 @@
-use derive_more::{Display, Error};
 use actix_web::http;
+use derive_more::{Display, Error};
 use std::io;
 
 #[derive(Debug, Display, Error)]
