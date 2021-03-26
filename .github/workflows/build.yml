@@ -1,0 +1,84 @@
+name: Rust (stable)
+on: [push, pull_request]
+  # pull_request:
+  # push:
+  #   branches:
+  #     - master
+
+jobs:
+  # Make sure the project compiles, without trying to building the whole project.
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2.3.3
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Run cargo check
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+
+  # Run unit and integration tests in the project.
+  # Using tarpaulin to collect coverage reports and upload to Codecov (requires token).
+  tests:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2.3.3
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Run cargo-tarpaulin (main)
+        uses: actions-rs/tarpaulin@v0.1
+
+      - name: Upload to codecov.io
+        uses: codecov/codecov-action@v1.0.14
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+          flags: unit
+
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v2.2.0
+        with:
+          name: code-coverage-report
+          path: cobertura.xml
+
+  # Run cargofmt and clippy to highlight warnings and style errors.
+  lints:
+      name: Lints
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout sources
+          uses: actions/checkout@v2.3.3
+
+        - name: Install stable toolchain
+          uses: actions-rs/toolchain@v1
+          with:
+            profile: minimal
+            toolchain: stable
+            override: true
+            components: rustfmt, clippy
+
+        - name: Run cargo fmt
+          uses: actions-rs/cargo@v1
+          with:
+            command: fmt
+            args: --all -- --check
+
+        - name: Run cargo clippy
+          uses: actions-rs/clippy@master
+          with:
+            args: --all-features --all-targets
