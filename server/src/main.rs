@@ -1,10 +1,5 @@
-use actix_web::{
-    error,
-    http,
-    web,
-    HttpRequest,
-    HttpResponse,};
 use actix_files::NamedFile;
+use actix_web::{error, http, web, HttpRequest, HttpResponse};
 use derive_more::{Display, Error};
 use std::io;
 
@@ -14,15 +9,12 @@ async fn main() -> io::Result<()> {
 
     println!("Starting server on http://127.0.0.1:8080");
     let app_state = web::Data::new(AppState {
-        data: String::from("data")
+        data: String::from("data"),
     });
-    HttpServer::new(move || {
-        App::new()
-            .configure(config_app(app_state.clone()))
-    })
-    .bind(("127.0.0.1", 8080))?
-    .run()
-    .await
+    HttpServer::new(move || App::new().configure(config_app(app_state.clone())))
+        .bind(("127.0.0.1", 8080))?
+        .run()
+        .await
 }
 
 struct AppState {
@@ -32,10 +24,7 @@ struct AppState {
 fn config_app(app_state: web::Data<AppState>) -> Box<dyn Fn(&mut web::ServiceConfig)> {
     Box::new(move |cfg: &mut web::ServiceConfig| {
         cfg.app_data(app_state.clone())
-            .service(
-                web::resource("/documentation/spec.yaml")
-                    .route(web::get().to(get_doc))
-            );
+            .service(web::resource("/documentation/spec.yaml").route(web::get().to(get_doc)));
     })
 }
 
@@ -90,13 +79,10 @@ mod tests {
         #[actix_rt::test]
         async fn get_yaml() {
             let app_state = web::Data::new(AppState {
-                data: String::from("data")
+                data: String::from("data"),
             });
-            let mut app = test::init_service(
-                App::new()
-                    .configure(
-                        config_app(app_state.clone())
-            )).await;
+            let mut app =
+                test::init_service(App::new().configure(config_app(app_state.clone()))).await;
 
             let request = test::TestRequest::get()
                 .uri("http://localhost/documentation/spec.yaml")
@@ -105,7 +91,10 @@ mod tests {
             let response = test::call_service(&mut app, request).await;
 
             assert_eq!(response.status(), http::StatusCode::OK);
-            assert_eq!(response.headers().get("Content-Type").unwrap(), "text/x-yaml")
+            assert_eq!(
+                response.headers().get("Content-Type").unwrap(),
+                "text/x-yaml"
+            )
         }
     }
 }
