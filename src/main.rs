@@ -1,6 +1,8 @@
 
-use karp::config;
 use std::{env, io};
+mod api;
+pub mod config;
+mod error;
 
 #[actix_rt::main]
 async fn main() -> io::Result<()> {
@@ -24,12 +26,12 @@ async fn main() -> io::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::config;
     use actix_web::{App, HttpServer};
 
     #[actix_rt::test]
     async fn test_startup_without_auth_middleware_ok() {
-        let pool = config::db::test::migrate_and_config_db(":memory:");
+        let pool = config::db::migrate_and_config_db(":memory:");
 
         HttpServer::new(move || {
             App::new()

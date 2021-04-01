@@ -1,22 +1,27 @@
-use sqlx::sqlite::SqlitePool;
+#[allow(unused_imports)]
+use diesel::{
+    r2d2::{self, ConnectionManager},
+};
+use log::info;
+#[cfg(test)]
+use diesel::sqlite::SqliteConnection;
 
 #[cfg(test)]
-type Pool = SqlitePool;
+pub type Connection = SqliteConnection;
+
+pub type Pool = r2d2::Pool<ConnectionManager<Connection>>;
 
 
 #[cfg(test)]
-pub mod test {
-    use super::*;
+pub fn migrate_and_config_db(url: &str) -> Pool {
+    use diesel::{sql_query, RunQueryDsl};
 
-    async fn migrate_and_config_db(url: &str) -> Pool {
-        use sqlx::sqlite::SqlitePoolOptions;
+    info!("Migrating and configuring database...");
+    let manager = ConnectionManager::<Connection>::new(url);
+    let pool = r2d2::Pool::builder().build(manager).expect("Failed to create pool.");
 
-        let pool = SqlitePoolOptions::new()
-            .max_connections(1)
-            .connect(url)
-            .await
-            .expect("Failed to connect to test pool.");
+    sql_query(r#"DROP TABLE IF EXISTS resources;"#).execute(&pool.get().unwrap()).unwrap();
 
-        pool
-    }
+    pool
 }
+
