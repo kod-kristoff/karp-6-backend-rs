@@ -14,5 +14,6 @@ derive_more = "0.99.13"
 log = "0.4.14"
 env_logger = "0.8.3"
 actix-service = "1.0.6"
+sqlx = { version = "0.5.1", features = ["runtime-actix-rustls", "sqlite"] }
 
 [dev-dependencies]

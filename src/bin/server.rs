@@ -29,8 +29,11 @@ mod tests {
 
     #[actix_rt::test]
     async fn test_startup_without_auth_middleware_ok() {
+        let pool = config::db::test::migrate_and_config_db(":memory:");
+
         HttpServer::new(move || {
             App::new()
+                .data(pool.clone())
                 .wrap(actix_web::middleware::Logger::default())
                 .configure(config::app::config_services)
         })
